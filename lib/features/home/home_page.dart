@@ -10,11 +10,9 @@ import '../../data/stores/auth_store.dart';
 import '../../shared/animations/dakkho_animations.dart';
 import '../../shared/widgets/glass_card.dart';
 import '../../shared/widgets/loading_skeleton.dart';
-import '../departments/department_config.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
-
   @override
   ConsumerState<HomePage> createState() => _HomePageState();
 }
@@ -23,275 +21,552 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).user;
-    final coursesAsync = ref.watch(courseApiProvider).maybeWhen(
-      data: (api) => api.list(limit: 10).then((r) => r.courses),
-      orElse: () => Future.value(<CourseModel>[]),
-    );
-    final liveAsync = ref.watch(liveClassApiProvider).maybeWhen(
-      data: (api) => api.list(),
-      orElse: () => Future.value(<LiveClass>[]),
-    );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textPrimary = isDark ? DakkhoColors.textPrimary : DakkhoColors.textPrimaryLight;
+    final textSecondary = isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: RefreshIndicator(
         onRefresh: () async => setState(() {}),
-        child: CustomScrollView(
-          slivers: [
-            // Hero header
-            SliverToBoxAdapter(
-              child: GlassCard(
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(20),
-                gradient: DakkhoColors.primaryGradient,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Welcome back,',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 13, fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 4),
-                    Text(user?.name ?? 'Student',
-                        style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 8),
-                    Text(user?.instituteName ?? 'Continue learning where you left off',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
-                  ],
-                ),
-              ).animate().fadeIn(duration: DakkhoAnimations.slow).slideY(begin: 0.1, end: 0).scale(
-                begin: const Offset(0.98, 0.98),
-                end: const Offset(1, 1),
-                duration: DakkhoAnimations.slow,
-              ),
-            ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Hero Section — gradient welcome card
+              _HeroSection(user: user, isDark: isDark, textPrimary: textPrimary, textSecondary: textSecondary),
 
-            // Continue Watching (from server watch history)
-            SliverToBoxAdapter(child: _SectionHeader(title: 'Continue Watching', icon: LucideIcons.playCircle, onSeeAll: () => context.go('/app/history'))),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 160,
-                child: FutureBuilder<List<WatchHistoryEntry>>(
-                  future: ref.read(watchHistoryApiProvider).maybeWhen(
-                    data: (api) => api.list(limit: 5).then((r) => r.history),
-                    orElse: () => Future.value(<WatchHistoryEntry>[]),
+              // 2. Continue Watching
+              _ContinueWatching(isDark: isDark, textPrimary: textPrimary, textSecondary: textSecondary),
+
+              // 3. Category Pills (department quick links)
+              _CategoryPills(isDark: isDark, textPrimary: textPrimary, textSecondary: textSecondary),
+
+              // 4. New Releases (horizontal scroll)
+              _NewReleases(isDark: isDark, textPrimary: textPrimary, textSecondary: textSecondary),
+
+              // 5. Live Now
+              _LiveNow(isDark: isDark, textPrimary: textPrimary, textSecondary: textSecondary),
+
+              // 6. Trending Courses
+              _TrendingCourses(isDark: isDark, textPrimary: textPrimary, textSecondary: textSecondary),
+
+              // 7. Featured Instructors
+              _FeaturedInstructors(isDark: isDark, textPrimary: textPrimary, textSecondary: textSecondary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Hero Section ───
+class _HeroSection extends ConsumerWidget {
+  const _HeroSection({required this.user, required this.isDark, required this.textPrimary, required this.textSecondary});
+  final User? user;
+  final bool isDark;
+  final Color textPrimary;
+  final Color textSecondary;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GlassCard(
+      padding: const EdgeInsets.all(20),
+      gradient: DakkhoColors.primaryGradient,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Welcome back,',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 13, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
+          Text(user?.name ?? 'Student',
+              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
+          Text(user?.instituteName ?? 'Continue learning where you left off',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
+        ],
+      ),
+    ).animate().fadeIn(duration: DakkhoAnimations.slow).slideY(begin: 0.1, end: 0).scale(
+      begin: const Offset(0.98, 0.98),
+      end: const Offset(1, 1),
+      duration: DakkhoAnimations.slow,
+    );
+  }
+}
+
+// ─── Continue Watching ───
+class _ContinueWatching extends ConsumerWidget {
+  const _ContinueWatching({required this.isDark, required this.textPrimary, required this.textSecondary});
+  final bool isDark;
+  final Color textPrimary;
+  final Color textSecondary;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 24, bottom: 12),
+          child: Row(
+            children: [
+              Icon(LucideIcons.playCircle, size: 18, color: DakkhoColors.primary),
+              const SizedBox(width: 8),
+              Text('Continue Watching', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary)),
+              const Spacer(),
+              TextButton(onPressed: () => context.go('/app/history'), child: const Text('See all')),
+            ],
+          ),
+        ).animate().fadeIn(duration: DakkhoAnimations.normal),
+        // Real watch history from API
+        FutureBuilder<List<WatchHistoryEntry>>(
+          future: ref.read(watchHistoryApiProvider).maybeWhen(
+            data: (api) => api.list(limit: 5).then((r) => r.history),
+            orElse: () => Future.value(<WatchHistoryEntry>[]),
+          ),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(height: 140, child: Center(child: CircularProgressIndicator()));
+            }
+            final history = snapshot.data ?? [];
+            if (history.isEmpty) {
+              return const SizedBox(height: 80, child: Center(child: Text('No videos watched yet', style: TextStyle(fontSize: 13, color: DakkhoColors.textSecondary))));
+            }
+            return SizedBox(
+              height: 140,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: history.length,
+                itemBuilder: (_, i) {
+                  final h = history[i];
+                  return GlassCard(
+                    onTap: () => context.go('/app/video/${h.videoId}/course/${h.courseId}'),
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(right: 12),
+                    child: SizedBox(
+                      width: 200,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            Icon(LucideIcons.playCircle, color: DakkhoColors.primary, size: 16),
+                            const SizedBox(width: 6),
+                            Expanded(child: Text(h.videoTitle, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary))),
+                          ]),
+                          const SizedBox(height: 4),
+                          Text(h.courseName, maxLines: 1, overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 11, color: textSecondary)),
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(value: (h.progress / 100).clamp(0, 1),
+                              backgroundColor: DakkhoColors.surfaceLight, color: DakkhoColors.primary, minHeight: 4),
+                          const SizedBox(height: 4),
+                          Text('${h.progress.toStringAsFixed(0)}% watched',
+                              style: const TextStyle(fontSize: 10, color: DakkhoColors.textMuted)),
+                        ],
+                      ),
+                    ),
+                  ).animate().fadeIn(delay: Duration(milliseconds: 80 * i)).slideX(begin: 0.1, end: 0);
+                },
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Category Pills (Department quick links) ───
+class _CategoryPills extends StatelessWidget {
+  const _CategoryPills({required this.isDark, required this.textPrimary, required this.textSecondary});
+  final bool isDark;
+  final Color textPrimary;
+  final Color textSecondary;
+
+  @override
+  Widget build(BuildContext context) {
+    final depts = [
+      ('CSE', '/app/department/cse', 0),
+      ('ETE', '/app/department/ete', 1),
+      ('EEE', '/app/department/eee', 2),
+      ('ME', '/app/department/me', 3),
+      ('CE', '/app/department/ce', 4),
+      ('Arch', '/app/department/architecture', 5),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 24, bottom: 12),
+          child: Row(children: [
+            Icon(LucideIcons.building, size: 18, color: DakkhoColors.primary),
+            const SizedBox(width: 8),
+            Text('Departments', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary)),
+          ]),
+        ),
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: depts.length,
+            itemBuilder: (_, i) {
+              final d = depts[i];
+              return GestureDetector(
+                onTap: () => context.go(d.$2),
+                child: Container(
+                  width: 80,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: DakkhoColors.courseGradients[d.$3 % DakkhoColors.courseGradients.length]),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    final history = snapshot.data ?? [];
-                    if (history.isEmpty) {
-                      return Center(
-                        child: Text('No videos watched yet',
-                            style: TextStyle(color: DakkhoColors.textSecondary, fontSize: 13)),
-                      );
-                    }
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: history.length,
-                      itemBuilder: (_, i) {
-                        final h = history[i];
-                        return _HistoryCard(entry: h).animate().fadeIn(delay: Duration(milliseconds: 80 * i)).slideX(begin: 0.1, end: 0);
-                      },
-                    );
-                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(d.$1, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              ).animate().fadeIn(delay: Duration(milliseconds: 50 * i)).scale(
+                begin: const Offset(0.8, 0.8),
+                end: const Offset(1, 1),
+                duration: DakkhoAnimations.normal,
+                curve: DakkhoAnimations.elastic,
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
 
-            // Departments shortcut
-            SliverToBoxAdapter(child: _SectionHeader(title: 'Departments', icon: LucideIcons.building, onSeeAll: () => context.go('/app/department/cse'))),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 100,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: 8,
-                  itemBuilder: (_, i) {
-                    final dept = ['cse', 'ete', 'eee', 'me', 'ce', 'architecture', 'textile', 'chemical'][i];
-                    final info = DepartmentConfig.all[dept]!;
-                    return GestureDetector(
-                      onTap: () => context.go('/app/department/$dept'),
-                      child: Container(
-                        width: 80,
-                        margin: const EdgeInsets.only(right: 12),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: DakkhoColors.courseGradients[i % DakkhoColors.courseGradients.length]),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+// ─── New Releases (horizontal scroll of featured courses) ───
+class _NewReleases extends ConsumerWidget {
+  const _NewReleases({required this.isDark, required this.textPrimary, required this.textSecondary});
+  final bool isDark;
+  final Color textPrimary;
+  final Color textSecondary;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 24, bottom: 12),
+          child: Row(children: [
+            Icon(LucideIcons.sparkles, size: 18, color: DakkhoColors.accent),
+            const SizedBox(width: 8),
+            Text('New Releases', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary)),
+          ]),
+        ),
+        FutureBuilder<List<CourseModel>>(
+          future: ref.read(courseApiProvider).maybeWhen(
+            data: (api) => api.list(limit: 20).then((r) => r.courses.where((c) => c.isFeatured).take(8).toList()),
+            orElse: () => Future.value(<CourseModel>[]),
+          ),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator()));
+            }
+            final courses = snapshot.data ?? [];
+            if (courses.isEmpty) {
+              return const SizedBox(height: 60, child: Center(child: Text('No new releases', style: TextStyle(fontSize: 13, color: DakkhoColors.textSecondary))));
+            }
+            return SizedBox(
+              height: 200,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: courses.length,
+                itemBuilder: (_, i) {
+                  final c = courses[i];
+                  final gradient = DakkhoColors.courseGradients[i % DakkhoColors.courseGradients.length];
+                  return GestureDetector(
+                    onTap: () => context.go('/app/course/${c.id}'),
+                    child: Container(
+                      width: 256,
+                      margin: const EdgeInsets.only(right: 16),
+                      child: GlassCard(
+                        padding: EdgeInsets.zero,
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(info.icon, style: const TextStyle(fontSize: 28)),
-                            const SizedBox(height: 4),
-                            Text(info.shortName,
-                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+                            // Thumbnail
+                            Expanded(
+                              flex: 5,
+                              child: Container(
+                                decoration: BoxDecoration(gradient: LinearGradient(colors: gradient)),
+                                child: Stack(
+                                  children: [
+                                    Center(child: Icon(LucideIcons.play, color: Colors.white.withValues(alpha: 0.3), size: 40)),
+                                    Positioned(top: 8, left: 8,
+                                      child: Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(color: DakkhoColors.accent.withValues(alpha: 0.8), borderRadius: BorderRadius.circular(100)),
+                                        child: const Text('NEW', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700)))),
+                                    Positioned(bottom: 8, right: 8,
+                                      child: Container(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                        decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.5), borderRadius: BorderRadius.circular(4)),
+                                        child: Row(children: [
+                                          Icon(LucideIcons.clock, size: 10, color: Colors.white),
+                                          const SizedBox(width: 2),
+                                          Text('${c.duration}m', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700)),
+                                        ]))),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // Info
+                            Expanded(
+                              flex: 4,
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(c.title, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
+                                    const SizedBox(height: 2),
+                                    Text(c.instructorName, maxLines: 1, overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 11, color: textSecondary)),
+                                    const SizedBox(height: 4),
+                                    Row(children: [
+                                      Icon(LucideIcons.star, size: 12, color: DakkhoColors.warning),
+                                      const SizedBox(width: 2),
+                                      Text(c.rating.toStringAsFixed(1), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textPrimary)),
+                                      const SizedBox(width: 8),
+                                      Icon(LucideIcons.users, size: 12, color: textSecondary),
+                                      const SizedBox(width: 2),
+                                      Text('${c.totalStudents}', style: TextStyle(fontSize: 11, color: textSecondary)),
+                                    ]),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ).animate().fadeIn(delay: Duration(milliseconds: 50 * i)).scale(
-                      begin: const Offset(0.8, 0.8),
-                      end: const Offset(1, 1),
-                      duration: DakkhoAnimations.normal,
-                      curve: DakkhoAnimations.elastic,
-                    );
-                  },
-                ),
+                    ),
+                  ).animate().fadeIn(delay: Duration(milliseconds: 50 * i)).slideX(begin: 0.1, end: 0);
+                },
               ),
-            ),
-
-            // Trending Courses
-            SliverToBoxAdapter(child: _SectionHeader(title: 'Trending Courses', icon: LucideIcons.trendingUp, onSeeAll: () => context.go('/app/explore'))),
-            FutureBuilder<List<CourseModel>>(
-              future: coursesAsync,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SliverToBoxAdapter(child: CourseGridSkeleton(itemCount: 4));
-                }
-                final courses = snapshot.data ?? [];
-                if (courses.isEmpty) {
-                  return const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.all(40),
-                      child: Center(child: Text('No courses available', style: TextStyle(color: DakkhoColors.textSecondary))),
-                    ),
-                  );
-                }
-                return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.7,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, i) => _CourseCard(course: courses[i]).animate().fadeIn(delay: Duration(milliseconds: 60 * i)).slideY(begin: 0.1, end: 0),
-                      childCount: courses.length,
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            // Live sessions
-            SliverToBoxAdapter(child: _SectionHeader(title: 'Live Sessions', icon: LucideIcons.radio, onSeeAll: () => context.go('/app/live-sessions'))),
-            FutureBuilder<List<LiveClass>>(
-              future: liveAsync,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SliverToBoxAdapter(child: SizedBox(height: 80, child: Center(child: CircularProgressIndicator())));
-                }
-                final live = snapshot.data ?? [];
-                if (live.isEmpty) {
-                  return const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Center(child: Text('No live sessions scheduled', style: TextStyle(color: DakkhoColors.textSecondary))),
-                    ),
-                  );
-                }
-                return SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, i) => _LiveClassCard(liveClass: live[i]).animate().fadeIn(delay: Duration(milliseconds: 60 * i)).slideX(begin: 0.1, end: 0),
-                    childCount: live.length,
-                  ),
-                );
-              },
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-          ],
+            );
+          },
         ),
-      ),
+      ],
     );
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.icon, this.onSeeAll});
-  final String title;
-  final IconData icon;
-  final VoidCallback? onSeeAll;
+// ─── Live Now ───
+class _LiveNow extends ConsumerWidget {
+  const _LiveNow({required this.isDark, required this.textPrimary, required this.textSecondary});
+  final bool isDark;
+  final Color textPrimary;
+  final Color textSecondary;
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: DakkhoColors.primary),
-          const SizedBox(width: 8),
-          Text(title,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontFamilyFallback: ['NotoSansBengali'],
-                fontSize: 18, fontWeight: FontWeight.w700,
-                color: DakkhoColors.textPrimary,
-              )),
-          const Spacer(),
-          if (onSeeAll != null)
-            TextButton(onPressed: onSeeAll, child: const Text('See all')),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FutureBuilder<List<LiveClass>>(
+      future: ref.read(liveClassApiProvider).maybeWhen(
+        data: (api) => api.list(),
+        orElse: () => Future.value(<LiveClass>[]),
       ),
-    ).animate().fadeIn(duration: DakkhoAnimations.normal).slideX(begin: -0.05, end: 0);
-  }
-}
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) return const SizedBox.shrink();
+        final live = snapshot.data ?? [];
+        if (live.isEmpty) return const SizedBox.shrink();
 
-class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({required this.entry});
-  final WatchHistoryEntry entry;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      onTap: () => context.go('/app/video/${entry.videoId}/course/${entry.courseId}'),
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(right: 12),
-      child: SizedBox(
-        width: 200,
-        child: Column(
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(LucideIcons.playCircle, color: DakkhoColors.primary, size: 16),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(entry.videoTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: DakkhoColors.textPrimary)),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.only(top: 24, bottom: 12),
+              child: Row(children: [
+                Icon(LucideIcons.radio, size: 18, color: DakkhoColors.danger).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
+                  begin: const Offset(1, 1), end: const Offset(1.3, 1.3), duration: const Duration(seconds: 1)),
+                const SizedBox(width: 8),
+                Text('Live Now', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary)),
+                const SizedBox(width: 8),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(color: DakkhoColors.danger.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(100)),
+                  child: Text('${live.length} LIVE', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: DakkhoColors.danger))),
+              ]),
             ),
-            const SizedBox(height: 4),
-            Text(entry.courseName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 11, color: DakkhoColors.textSecondary)),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: (entry.progress / 100).clamp(0, 1),
-              backgroundColor: DakkhoColors.surfaceLight,
-              color: DakkhoColors.primary,
-              minHeight: 4,
+            SizedBox(
+              height: 80,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: live.length,
+                itemBuilder: (_, i) {
+                  final l = live[i];
+                  return GlassCard(
+                    onTap: l.meetingUrl != null ? () {} : null,
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(right: 12),
+                    child: SizedBox(
+                      width: 180,
+                      child: Row(children: [
+                        Container(width: 8, height: 8,
+                          decoration: const BoxDecoration(color: DakkhoColors.danger, shape: BoxShape.circle)).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
+                          begin: const Offset(1, 1), end: const Offset(1.4, 1.4), duration: const Duration(milliseconds: 600)),
+                        const SizedBox(width: 8),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+                          Text(l.title, maxLines: 1, overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
+                          Text('${l.instructorName ?? 'Instructor'} · ${l.durationMinutes}min',
+                              style: TextStyle(fontSize: 11, color: textSecondary)),
+                        ])),
+                        Icon(LucideIcons.radio, color: DakkhoColors.danger, size: 20),
+                      ]),
+                    ),
+                  ).animate().fadeIn(delay: Duration(milliseconds: 50 * i)).slideX(begin: 0.1, end: 0);
+                },
+              ),
             ),
-            const SizedBox(height: 4),
-            Text('${entry.progress.toStringAsFixed(0)}% watched',
-                style: const TextStyle(fontSize: 10, color: DakkhoColors.textMuted)),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
+// ─── Trending Courses ───
+class _TrendingCourses extends ConsumerWidget {
+  const _TrendingCourses({required this.isDark, required this.textPrimary, required this.textSecondary});
+  final bool isDark;
+  final Color textPrimary;
+  final Color textSecondary;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 24, bottom: 12),
+          child: Row(children: [
+            Icon(LucideIcons.trendingUp, size: 18, color: DakkhoColors.primary),
+            const SizedBox(width: 8),
+            Text('Trending Courses', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary)),
+            const Spacer(),
+            TextButton(onPressed: () => context.go('/app/explore'), child: const Text('See all')),
+          ]),
+        ),
+        FutureBuilder<List<CourseModel>>(
+          future: ref.read(courseApiProvider).maybeWhen(
+            data: (api) => api.list(limit: 10).then((r) => r.courses),
+            orElse: () => Future.value(<CourseModel>[]),
+          ),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CourseGridSkeleton(itemCount: 4);
+            }
+            final courses = snapshot.data ?? [];
+            if (courses.isEmpty) {
+              return const SizedBox(height: 60, child: Center(child: Text('No courses available', style: TextStyle(fontSize: 13, color: DakkhoColors.textSecondary))));
+            }
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, childAspectRatio: 0.7,
+                crossAxisSpacing: 12, mainAxisSpacing: 12,
+              ),
+              itemCount: courses.length,
+              itemBuilder: (_, i) => _CourseCard(course: courses[i], textPrimary: textPrimary, textSecondary: textSecondary)
+                  .animate().fadeIn(delay: Duration(milliseconds: 60 * i)).slideY(begin: 0.1, end: 0),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Featured Instructors ───
+class _FeaturedInstructors extends ConsumerWidget {
+  const _FeaturedInstructors({required this.isDark, required this.textPrimary, required this.textSecondary});
+  final bool isDark;
+  final Color textPrimary;
+  final Color textSecondary;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FutureBuilder<List<InstructorModel>>(
+      future: ref.read(instructorApiProvider).maybeWhen(
+        data: (api) => api.list(limit: 6).then((r) => r.instructors),
+        orElse: () => Future.value(<InstructorModel>[]),
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) return const SizedBox.shrink();
+        final instructors = snapshot.data ?? [];
+        if (instructors.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 24, bottom: 12),
+              child: Row(children: [
+                Icon(LucideIcons.graduationCap, size: 18, color: DakkhoColors.primary),
+                const SizedBox(width: 8),
+                Text('Featured Instructors', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: textPrimary)),
+                const Spacer(),
+                TextButton(onPressed: () => context.go('/app/instructors'), child: const Text('See all')),
+              ]),
+            ),
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: instructors.length,
+                itemBuilder: (_, i) {
+                  final inst = instructors[i];
+                  return GestureDetector(
+                    onTap: () => context.go('/app/instructor/${inst.id}'),
+                    child: Container(
+                      width: 80,
+                      margin: const EdgeInsets.only(right: 12),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 28,
+                            backgroundColor: DakkhoColors.primary,
+                            backgroundImage: inst.avatarUrl.isNotEmpty ? NetworkImage(inst.avatarUrl) : null,
+                            child: inst.avatarUrl.isEmpty
+                                ? Text(inst.name.isNotEmpty ? inst.name[0] : '?', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))
+                                : null,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(inst.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textPrimary)),
+                        ],
+                      ),
+                    ),
+                  ).animate().fadeIn(delay: Duration(milliseconds: 50 * i)).scale(
+                    begin: const Offset(0.8, 0.8), end: const Offset(1, 1),
+                    duration: DakkhoAnimations.normal, curve: DakkhoAnimations.elastic,
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ─── Course Card (used in grid) ───
 class _CourseCard extends StatelessWidget {
-  const _CourseCard({required this.course});
+  const _CourseCard({required this.course, required this.textPrimary, required this.textSecondary});
   final CourseModel course;
+  final Color textPrimary;
+  final Color textSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -307,8 +582,7 @@ class _CourseCard extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: DakkhoColors.courseGradientFor(course.id),
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  begin: Alignment.topLeft, end: Alignment.bottomRight,
                 ),
               ),
               child: course.thumbnailUrl.isNotEmpty
@@ -324,31 +598,21 @@ class _CourseCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(course.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: DakkhoColors.textPrimary)),
+                  Text(course.title, maxLines: 2, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
                   const SizedBox(height: 4),
-                  Text(course.instructorName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11, color: DakkhoColors.textSecondary)),
+                  Text(course.instructorName, maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 11, color: textSecondary)),
                   const Spacer(),
-                  Row(
-                    children: [
-                      Icon(LucideIcons.star, size: 12, color: DakkhoColors.warning),
-                      const SizedBox(width: 2),
-                      Text(course.rating.toStringAsFixed(1),
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: DakkhoColors.textPrimary)),
-                      const Spacer(),
-                      Text(course.price == 0 ? 'FREE' : '৳${course.price}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: course.price == 0 ? DakkhoColors.success : DakkhoColors.primary,
-                          )),
-                    ],
-                  ),
+                  Row(children: [
+                    Icon(LucideIcons.star, size: 12, color: DakkhoColors.warning),
+                    const SizedBox(width: 2),
+                    Text(course.rating.toStringAsFixed(1), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: textPrimary)),
+                    const Spacer(),
+                    Text(course.price == 0 ? 'FREE' : '৳${course.price}',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                            color: course.price == 0 ? DakkhoColors.success : DakkhoColors.primary)),
+                  ]),
                 ],
               ),
             ),
@@ -358,47 +622,3 @@ class _CourseCard extends StatelessWidget {
     );
   }
 }
-
-class _LiveClassCard extends StatelessWidget {
-  const _LiveClassCard({required this.liveClass});
-  final LiveClass liveClass;
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      onTap: liveClass.meetingUrl != null ? () {} : null,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            width: 8, height: 8,
-            decoration: const BoxDecoration(color: DakkhoColors.danger, shape: BoxShape.circle),
-          ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
-            begin: const Offset(1, 1),
-            end: const Offset(1.4, 1.4),
-            duration: const Duration(milliseconds: 800),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(liveClass.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: DakkhoColors.textPrimary)),
-                const SizedBox(height: 2),
-                Text('${liveClass.instructorName ?? 'Instructor'} · ${liveClass.durationMinutes}min',
-                    style: const TextStyle(fontSize: 12, color: DakkhoColors.textSecondary)),
-              ],
-            ),
-          ),
-          Icon(LucideIcons.radio, color: DakkhoColors.danger, size: 20),
-        ],
-      ),
-    );
-  }
-}
-
-// Need access to DepartmentConfig for the dept chips
