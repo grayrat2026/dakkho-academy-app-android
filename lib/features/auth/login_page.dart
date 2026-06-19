@@ -82,13 +82,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: DakkhoColors.bgDark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [DakkhoColors.bgDark, DakkhoColors.bgDarker],
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [DakkhoColors.bgDark, DakkhoColors.bgDarker]
+                : [DakkhoColors.bgLight, Colors.white],
           ),
         ),
         child: SafeArea(

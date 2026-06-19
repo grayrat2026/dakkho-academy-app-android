@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 /// Matches the dakkho-student-app web app's Tailwind CSS variables exactly.
 /// Source: student-app/src/app/globals.css
 ///
-/// Dark mode is the default (per spec). Light mode is supported for users
-/// who explicitly enable it, but the app opens in dark by default.
+/// LIGHT THEME IS THE DEFAULT (matches web app's :root).
+/// Dark mode is available as a user-selectable option.
 
 class DakkhoColors {
   DakkhoColors._();
 
-  // ─── Brand ───
+  // ─── Brand (same in both themes) ───
   static const Color primary = Color(0xFF0EA5E9);        // sky-500
   static const Color primaryDark = Color(0xFF2563EB);    // blue-600
   static const Color accent = Color(0xFF10B981);         // emerald-500
@@ -19,29 +19,37 @@ class DakkhoColors {
   static const Color danger = Color(0xFFEF4444);         // red-500
   static const Color purple = Color(0xFF8B5CF6);         // violet-500
 
-  // ─── Dark Mode Backgrounds (slate family) ───
+  // ─── LIGHT MODE (DEFAULT — matches web app :root) ───
+  static const Color bgLight = Color(0xFFF0F9FF);        // sky-50 — main background
+  static const Color surfaceWhite = Color(0xFFFFFFFF);   // white — cards, popovers
+  static const Color surfaceLightMode = Color(0xFFF1F5F9); // slate-100 — secondary/muted
+  static const Color textPrimaryLight = Color(0xFF0F172A); // slate-900
+  static const Color textSecondaryLight = Color(0xFF64748B); // slate-500
+  static const Color inputLight = Color(0xFFE2E8F0);     // slate-200
+  static const Color borderLight = Color(0x80FFFFFF);    // white @ 50%
+
+  // Glassmorphism — LIGHT (matches .glass-card in :root)
+  static const Color glassCardBgLight = Color(0xB3FFFFFF);   // white @ 70%
+  static const Color glassCardBorderLight = Color(0x80FFFFFF); // white @ 50%
+  static const Color glassSidebarLight = Color(0xD9FFFFFF);   // white @ 85%
+
+  // ─── DARK MODE (optional — matches web app .dark) ───
   static const Color bgDark = Color(0xFF0C1222);         // custom dark navy
   static const Color bgDarker = Color(0xFF020617);       // slate-950
   static const Color surface = Color(0xFF0F172A);        // slate-900
-  static const Color surfaceLight = Color(0xFF1E293B);   // slate-800
+  static const Color surfaceLight = Color(0xFF1E293B);   // slate-800 (dark mode)
   static const Color surfaceLighter = Color(0xFF334155); // slate-700
 
-  // ─── Text ───
+  // ─── Text (dark mode) ───
   static const Color textPrimary = Color(0xFFF0F9FF);    // sky-50
   static const Color textSecondary = Color(0xFF94A3B8);  // slate-400
   static const Color textMuted = Color(0xFF64748B);      // slate-500
 
-  // ─── Glassmorphism (matches .dark .glass-card CSS) ───
-  static const Color glassCardBg = Color(0xB31E293B);       // slate-800 @ 70% opacity (0xB3 = 179/255 ≈ 0.7)
+  // Glassmorphism — DARK (matches .dark .glass-card)
+  static const Color glassCardBg = Color(0xB31E293B);       // slate-800 @ 70%
   static const Color glassCardBorder = Color(0x1AFFFFFF);   // white @ 10%
   static const Color glassCardShadow = Color(0x1A0EA5E9);   // sky-500 @ 10%
-
-  static const Color glassSidebar = Color(0xD91E293B);      // slate-800 @ 85% (0xD9 ≈ 217/255 ≈ 0.85)
-
-  // ─── Light Mode Backgrounds ───
-  static const Color bgLight = Color(0xFFF0F9FF);        // sky-50
-  static const Color surfaceLightMode = Color(0xFFFFFFFF);
-  static const Color glassCardBgLight = Color(0xB3FFFFFF); // white @ 70%
+  static const Color glassSidebar = Color(0xD91E293B);      // slate-800 @ 85%
 
   // ─── Chart Colors (matches globals.css) ───
   static const Color chart1 = Color(0xFF0EA5E9);
@@ -95,4 +103,45 @@ class DakkhoColors {
     final hash = id.hashCode.abs();
     return courseGradients[hash % courseGradients.length];
   }
+
+  // ─── Theme-aware helpers (use BuildContext) ───
+  // Named with `themed` prefix to avoid conflict with static const fields.
+
+  static Color themedBackground(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark ? bgDark : bgLight;
+
+  static Color themedTextPrimary(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFFF0F9FF)
+        : const Color(0xFF0F172A);
+
+  static Color themedTextSecondary(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
+
+  static Color themedGlassCardBg(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xB31E293B)
+        : const Color(0xB3FFFFFF);
+
+  static Color themedGlassCardBorder(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const Color(0x1AFFFFFF)
+        : const Color(0x80FFFFFF);
+
+  static Color themedGlassSidebar(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xD91E293B)
+        : const Color(0xD9FFFFFF);
+
+  static Color themedSurface(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF1E293B)
+        : const Color(0xFFF1F5F9);
+
+  static Color themedInputBorder(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark
+        ? const Color(0x1AFFFFFF)
+        : const Color(0xFFE2E8F0);
 }

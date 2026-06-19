@@ -53,12 +53,12 @@ class _GlassCardState extends State<GlassCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark
-        ? DakkhoColors.glassCardBg
-        : DakkhoColors.glassCardBgLight;
+    final bgColor = widget.gradient != null
+        ? null
+        : (isDark ? DakkhoColors.glassCardBg : DakkhoColors.glassCardBgLight);
     final borderColor = isDark
         ? DakkhoColors.glassCardBorder
-        : const Color(0x80FFFFFF);
+        : DakkhoColors.glassCardBorderLight;
 
     return MouseRegion(
       onEnter: widget.enableHover ? (_) => setState(() => _isHovered = true) : null,

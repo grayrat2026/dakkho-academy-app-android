@@ -28,12 +28,12 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
 
-  // Set dark status bar by default
+  // Set status bar — adapts to theme (light = dark icons, dark = light icons)
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: Color(0xFF0F172A),
-    systemNavigationBarIconBrightness: Brightness.light,
+    statusBarIconBrightness: Brightness.dark,  // dark icons for light background
+    systemNavigationBarColor: Color(0xFFF0F9FF),  // sky-50 (light mode)
+    systemNavigationBarIconBrightness: Brightness.dark,
   ));
 
   runApp(const ProviderScope(child: DakkhoApp()));

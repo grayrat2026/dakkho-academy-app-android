@@ -26,7 +26,7 @@ class AppShell extends StatelessWidget {
     final currentIndex = _destinations.indexWhere((d) => location.startsWith(d.path));
 
     return Scaffold(
-      backgroundColor: DakkhoColors.bgDark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -40,7 +40,9 @@ class AppShell extends StatelessWidget {
           border: Border(top: BorderSide(color: DakkhoColors.glassCardBorder, width: 1)),
         ),
         child: NavigationBar(
-          backgroundColor: DakkhoColors.glassSidebar,
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? DakkhoColors.glassSidebar
+              : DakkhoColors.glassSidebarLight,
           indicatorColor: DakkhoColors.primary.withValues(alpha: 0.15),
           selectedIndex: currentIndex.clamp(0, _destinations.length - 1),
           onDestinationSelected: (i) => context.go(_destinations[i].path),
@@ -130,7 +132,9 @@ class _AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: DakkhoColors.glassSidebar,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? DakkhoColors.glassSidebar
+          : DakkhoColors.glassSidebarLight,
       width: MediaQuery.of(context).size.width * 0.85,
       child: SafeArea(
         child: ListView(

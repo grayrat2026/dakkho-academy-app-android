@@ -63,7 +63,7 @@ class SecureStorage {
   Future<void> setDeviceUuid(String uuid) => _secure.write(key: _kDeviceUuid, value: uuid);
 
   // ─── Theme / Language / Onboarding (SharedPreferences) ───
-  String getThemeMode() => _prefs.getString(_kThemeMode) ?? 'system';
+  String getThemeMode() => _prefs.getString(_kThemeMode) ?? 'light';
   Future<void> setThemeMode(String mode) => _prefs.setString(_kThemeMode, mode);
 
   String getLanguage() => _prefs.getString(_kLanguage) ?? 'en';

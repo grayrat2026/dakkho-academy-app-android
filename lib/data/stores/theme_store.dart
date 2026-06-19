@@ -8,7 +8,7 @@ import '../../core/storage/secure_storage.dart';
 ///   - themeMode: ThemeMode (light / dark / system)
 ///   - Overrides system theme when user picks explicitly
 class ThemeState {
-  const ThemeState({this.themeMode = ThemeMode.system});
+  const ThemeState({this.themeMode = ThemeMode.light});
 
   final ThemeMode themeMode;
 
@@ -27,9 +27,9 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
     final mode = _storage.getThemeMode();
     state = ThemeState(
       themeMode: switch (mode) {
-        'light' => ThemeMode.light,
         'dark' => ThemeMode.dark,
-        _ => ThemeMode.system,
+        'system' => ThemeMode.system,
+        _ => ThemeMode.light,  // default is light (matches web app :root)
       },
     );
   }
