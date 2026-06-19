@@ -64,3 +64,5 @@ android/key.properties
 # OS
 .DS_Store
 Thumbs.db
+
+.idea/
