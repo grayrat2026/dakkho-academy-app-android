@@ -542,7 +542,8 @@ IARC questionnaire — likely "Everyone" or "Teen".
 | **Phase 0**: Backend triage (anti-piracy endpoints) | 1-2 | ✅ Deployed |
 | **Phase 1**: Flutter scaffold (theme, router, stores, API client, animations) | 3 | ✅ Complete |
 | **Phase 2**: All 97 routes + real API integration for 12 high-traffic pages | 4-5 | ✅ Complete |
-| **Phase 3**: Course detail + checkout + video player + remaining pages polish | 6-9 | 🔄 Next |
+| **Phase 3**: UniversalVideoPlayer + Course Detail + Curriculum tree + course sub-pages | 6-9 | ✅ Complete |
+| **Phase 4**: Instructor profile pages + remaining sub-pages polish | 10-13 | 🔄 Next |
 | **Phase 3**: Core pages (Home, Explore, Search, My Courses, Notifications, Profile) with REAL API | 6-7 | Pending |
 | **Phase 4**: Course detail + checkout + PipraPay + payment cache invalidation | 8-9 | Pending |
 | **Phase 5**: UnifiedVideoPlayer (HLS + YouTube + MP4) + watch progress + forensic watermark | 10 | Pending |
