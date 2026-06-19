@@ -1,0 +1,95 @@
+name: Build Android APK
+
+on:
+  # Manual trigger from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: 'Build flavor (dev, staging, or prod)'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+  # Auto-build on push to main
+  push:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - 'android/**'
+      - 'pubspec.yaml'
+      - '.github/workflows/build-apk.yml'
+
+jobs:
+  build:
+    name: Build ${{ github.event.inputs.flavor || 'prod' }} APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ─── Checkout code ───
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ─── Set up Java 17 ───
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # ─── Set up Flutter ───
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.4'
+          channel: 'stable'
+          cache: true
+
+      # ─── Get dependencies ───
+      - name: Get dependencies
+        run: flutter pub get
+
+      # ─── Generate localization ───
+      - name: Generate localization
+        run: flutter gen-l10n
+
+      # ─── Verify code ───
+      - name: Analyze code
+        run: flutter analyze --no-fatal-warnings
+        continue-on-error: true
+
+      # ─── Determine flavor ───
+      - name: Set flavor
+        id: flavor
+        run: |
+          FLAVOR="${{ github.event.inputs.flavor || 'prod' }}"
+          echo "flavor=$FLAVOR" >> $GITHUB_OUTPUT
+          echo "Building flavor: $FLAVOR"
+
+      # ─── Build APK ───
+      - name: Build APK
+        run: |
+          flutter build apk \
+            --flavor ${{ steps.flavor.outputs.flavor }} \
+            --release \
+            --dart-define-from-file=.env.${{ steps.flavor.outputs.flavor }}
+
+      # ─── Upload APK artifact ───
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: dakkho-${{ steps.flavor.outputs.flavor }}-apk
+          path: build/app/outputs/flutter-apk/app-${{ steps.flavor.outputs.flavor }}-release.apk
+          retention-days: 30
+
+      # ─── Print APK info ───
+      - name: Print APK info
+        run: |
+          echo "=== APK Build Complete ==="
+          ls -lh build/app/outputs/flutter-apk/
+          echo ""
+          echo "APK file: app-${{ steps.flavor.outputs.flavor }}-release.apk"
+          echo "Download from: Actions → this run → Artifacts section"

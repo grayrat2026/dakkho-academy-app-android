@@ -36,7 +36,7 @@ android {
     }
 
     // ─── Flavor Configuration ───
-    flavorDimensions = "default"
+    flavorDimensions = ["default"]
 
     productFlavors {
         dev {
