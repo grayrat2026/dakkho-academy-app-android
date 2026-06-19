@@ -90,8 +90,8 @@ android {
     buildTypes {
         release {
             // ProGuard/R8 obfuscation
-            minifyEnabled = true
-            shrinkResources = true
+            minifyEnabled = false
+            shrinkResources = false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
 
             // Sign with release key if available, fall back to debug
