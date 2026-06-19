@@ -231,7 +231,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/app/maintenance', builder: (_, __) => const MaintenancePage()),
           GoRoute(path: '/app/terms', builder: (_, __) => const TermsPage()),
           GoRoute(path: '/app/privacy', builder: (_, __) => const PrivacyPage()),
-          GoRoute(path: '/app/payment-result', builder: (_, __) => const PaymentResultPage()),
+          GoRoute(path: '/app/payment-result', builder: (_, s) => PaymentResultPage(
+            ppId: s.uri.queryParameters['pp_id'],
+            paymentId: int.tryParse(s.uri.queryParameters['payment_id'] ?? ''),
+          )),
           GoRoute(path: '/app/payment-cancel', builder: (_, __) => const PaymentCancelPage()),
 
           // Error
