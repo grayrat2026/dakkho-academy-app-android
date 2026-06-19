@@ -276,11 +276,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  // SecureStorage is a FutureProvider; we resolve it synchronously by reading the
-  // latest value. If not yet loaded, throw — the caller should await.
-  final storage = ref.watch(secureStorageProvider).maybeWhen(
-    data: (s) => s,
-    orElse: () => throw StateError('SecureStorage not ready'),
-  );
+  final storage = ref.watch(secureStorageProvider);
   return AuthNotifier(storage);
 });

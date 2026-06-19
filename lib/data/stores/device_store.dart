@@ -136,8 +136,5 @@ class DeviceNotifier extends StateNotifier<DeviceState> {
 }
 
 final deviceProvider = StateNotifierProvider<DeviceNotifier, DeviceState>((ref) {
-  return DeviceNotifier(ref.watch(secureStorageProvider).maybeWhen(
-    data: (s) => s,
-    orElse: () => throw StateError('SecureStorage not ready'),
-  ));
+  return DeviceNotifier(ref.watch(secureStorageProvider));
 });

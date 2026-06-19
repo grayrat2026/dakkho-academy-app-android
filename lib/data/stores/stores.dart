@@ -27,8 +27,11 @@ class WatchProgress {
 }
 
 class WatchProgressNotifier extends StateNotifier<WatchProgressState> {
-  WatchProgressNotifier(this._api) : super(const WatchProgressState());
-  final WatchHistoryApi _api;
+  WatchProgressNotifier() : super(const WatchProgressState());
+  
+  // API is set lazily when needed (avoids FutureProvider dependency in constructor)
+  WatchHistoryApi? _api;
+  void setApi(WatchHistoryApi api) => _api = _api ?? api;
 
   void updateProgress(String videoId, {String? courseId, int? lastPosition, num? progress, bool? completed}) {
     final existing = state.progress[videoId] ?? WatchProgress(videoId: videoId, courseId: courseId);
@@ -46,9 +49,10 @@ class WatchProgressNotifier extends StateNotifier<WatchProgressState> {
   WatchProgress? getProgress(String videoId) => state.progress[videoId];
 
   Future<void> syncToServer(String videoId, {String? videoTitle, int? duration}) async {
+    if (_api == null) return;
     final p = state.progress[videoId];
     if (p == null) return;
-    await _api.upsert(
+    await _api!.upsert(
       videoId: videoId,
       videoTitle: videoTitle,
       courseId: p.courseId,
@@ -62,7 +66,7 @@ class WatchProgressNotifier extends StateNotifier<WatchProgressState> {
 }
 
 final watchProgressProvider = StateNotifierProvider<WatchProgressNotifier, WatchProgressState>((ref) {
-  return WatchProgressNotifier(ref.watch(watchHistoryApiProvider).maybeWhen(data: (a) => a, orElse: () => throw StateError('WatchHistoryApi not ready')));
+  return WatchProgressNotifier();
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -102,13 +106,15 @@ class NotificationState {
 }
 
 class NotificationNotifier extends StateNotifier<NotificationState> {
-  NotificationNotifier(this._api) : super(const NotificationState());
-  final NotificationApi _api;
+  NotificationNotifier() : super(const NotificationState());
+  NotificationApi? _api;
+  void setApi(NotificationApi api) => _api = _api ?? api;
 
   Future<void> fetchFromServer() async {
+    if (_api == null) return;
     state = NotificationState(notifications: state.notifications, isLoading: true);
     try {
-      final result = await _api.list();
+      final result = await _api!.list();
       state = NotificationState(notifications: result.notifications, isLoading: false);
     } catch (_) {
       state = NotificationState(notifications: state.notifications, isLoading: false);
@@ -116,7 +122,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
   }
 
   Future<void> markAsRead(String id) async {
-    await _api.markAsRead(id);
+    if (_api != null) await _api!.markAsRead(id);
     final updated = state.notifications.map((n) => n.id == id
         ? AppNotification(id: n.id, title: n.title, message: n.message, type: n.type, read: true, createdAt: n.createdAt, actionUrl: n.actionUrl)
         : n).toList();
@@ -124,7 +130,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
   }
 
   Future<void> markAllRead() async {
-    await _api.markAllRead();
+    if (_api != null) await _api!.markAllRead();
     final updated = state.notifications.map((n) => AppNotification(id: n.id, title: n.title, message: n.message, type: n.type, read: true, createdAt: n.createdAt, actionUrl: n.actionUrl)).toList();
     state = NotificationState(notifications: updated);
   }
@@ -133,7 +139,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 }
 
 final notificationProvider = StateNotifierProvider<NotificationNotifier, NotificationState>((ref) {
-  return NotificationNotifier(ref.watch(notificationApiProvider).maybeWhen(data: (a) => a, orElse: () => throw StateError('NotificationApi not ready')));
+  return NotificationNotifier();
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -170,13 +176,15 @@ class ServerConfigState {
 }
 
 class ServerConfigNotifier extends StateNotifier<ServerConfigState> {
-  ServerConfigNotifier(this._api) : super(const ServerConfigState());
-  final ConfigApi _api;
+  ServerConfigNotifier() : super(const ServerConfigState());
+  ConfigApi? _api;
+  void setApi(ConfigApi api) => _api = _api ?? api;
 
   Future<void> fetch() async {
+    if (_api == null) return;
     state = ServerConfigState(config: state.config, isLoading: true);
     try {
-      final config = await _api.get();
+      final config = await _api!.get();
       state = ServerConfigState(config: config, isLoading: false);
     } catch (e) {
       state = ServerConfigState(config: state.config, isLoading: false, error: e.toString());
@@ -187,7 +195,7 @@ class ServerConfigNotifier extends StateNotifier<ServerConfigState> {
 }
 
 final serverConfigProvider = StateNotifierProvider<ServerConfigNotifier, ServerConfigState>((ref) {
-  return ServerConfigNotifier(ref.watch(configApiProvider).maybeWhen(data: (a) => a, orElse: () => throw StateError('ConfigApi not ready')));
+  return ServerConfigNotifier();
 });
 
 // ─────────────────────────────────────────────────────────────

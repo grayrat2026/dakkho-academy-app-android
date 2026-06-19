@@ -3,38 +3,43 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'app.dart';
 import 'core/notifications/onesignal_service.dart';
+import 'core/storage/secure_storage.dart';
 
 /// DAKKHO Academy — Flutter Android App
 ///
-/// Phase 1: Scaffold (week 3 of 18)
-/// Build command:
-///   flutter run --flavor dev --dart-define-from-file=.env.dev
-///   flutter run --flavor staging --dart-define-from-file=.env.staging
-///   flutter run --flavor prod --dart-define-from-file=.env.prod
-///
-/// Build APK/AAB:
-///   flutter build apk --flavor prod --release --dart-define-from-file=.env.prod
-///   flutter build appbundle --flavor prod --release --dart-define-from-file=.env.prod
-///
+/// LIGHT THEME IS DEFAULT (matches web app :root).
 /// Stack: 100% Cloudflare + OneSignal. NO Firebase dependency.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ─── Initialize OneSignal (push notifications — no Firebase needed) ───
+  // ─── Initialize OneSignal ───
   await OneSignalService.init();
 
-  // Lock to portrait orientation (video player can request landscape when needed)
+  // ─── Initialize SecureStorage BEFORE runApp ───
+  // This fixes the "SecureStorage not ready" error that was blocking login.
+  // All providers that need SecureStorage can now read it synchronously.
+  final secureStorage = await SecureStorage.create();
+
+  // ─── Lock to portrait ───
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
 
-  // Set status bar — adapts to theme (light = dark icons, dark = light icons)
+  // ─── Status bar for light theme ───
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,  // dark icons for light background
-    systemNavigationBarColor: Color(0xFFF0F9FF),  // sky-50 (light mode)
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarColor: Color(0xFFF0F9FF),
     systemNavigationBarIconBrightness: Brightness.dark,
   ));
 
-  runApp(const ProviderScope(child: DakkhoApp()));
+  // ─── Run app with SecureStorage pre-initialized ───
+  runApp(
+    ProviderScope(
+      overrides: [
+        secureStorageProvider.overrideWithValue(secureStorage),
+      ],
+      child: const DakkhoApp(),
+    ),
+  );
 }

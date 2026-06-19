@@ -53,8 +53,5 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
 }
 
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeState>((ref) {
-  return ThemeNotifier(ref.watch(secureStorageProvider).maybeWhen(
-    data: (s) => s,
-    orElse: () => throw StateError('SecureStorage not ready'),
-  ));
+  return ThemeNotifier(ref.watch(secureStorageProvider));
 });

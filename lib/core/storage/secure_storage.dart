@@ -87,6 +87,9 @@ class SecureStorage {
 }
 
 /// Riverpod provider for SecureStorage
-final secureStorageProvider = FutureProvider<SecureStorage>((ref) async {
-  return await SecureStorage.create();
+/// Pre-initialized in main() and passed via ProviderScope override.
+/// This is a regular Provider (not FutureProvider) so all dependent
+/// providers can read it synchronously without "not ready" errors.
+final secureStorageProvider = Provider<SecureStorage>((ref) {
+  throw UnimplementedError('SecureStorage must be overridden in main()');
 });

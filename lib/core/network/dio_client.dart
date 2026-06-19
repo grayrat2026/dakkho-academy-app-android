@@ -168,7 +168,7 @@ class RetryInterceptor extends Interceptor {
 
 /// Riverpod providers
 final dioProvider = FutureProvider<Dio>((ref) async {
-  final storage = await ref.watch(secureStorageProvider.future);
+  final storage = ref.watch(secureStorageProvider);  // Now synchronous — no .future needed
   final baseUrl = const String.fromEnvironment('API_BASE_URL',
       defaultValue: 'https://dakkho-admin-api.dakkho-admin.workers.dev');
   final enableLogging = const bool.fromEnvironment('ENABLE_DEV_LOGGING', defaultValue: false);
