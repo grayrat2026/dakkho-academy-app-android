@@ -20,6 +20,8 @@ on:
       - 'lib/**'
       - 'android/**'
       - 'pubspec.yaml'
+      - '.env*'
+      - '.gitignore'
       - '.github/workflows/build-apk.yml'
 
 jobs:
