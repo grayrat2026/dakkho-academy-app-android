@@ -27,3 +27,40 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+*.iml
+.idea/libraries/
+.idea/workspace.xml
+.idea/runConfigurations/
+
+# Generated files
+.dart_tool/
+*.g.dart
+*.freezed.dart
+*.config.dart
+
+# Secrets (NEVER commit)
+.env.local
+.env.*.local
+google-services.json
+GoogleService-Info.plist
+
+# Symlinks
+ios/Pods/
+android/.gradle/
+android/local.properties
+android/key.properties
+*.keystore
+*.jks
+
+# OS
+.DS_Store
+Thumbs.db

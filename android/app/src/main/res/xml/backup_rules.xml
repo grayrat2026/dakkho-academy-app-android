@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DAKKHO Academy — Backup Rules -->
+<!-- Disables backup for sensitive data (auth tokens, downloaded videos) -->
+<!-- Play Store Data Safety form: declare "Data is not backed up" -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="dakkho_device_prefs.xml" />
+    <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+    <exclude domain="file" path="downloads/" />
+    <exclude domain="database" path="dakkho_downloads.db" />
+</full-backup-content>

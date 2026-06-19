@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DAKKHO Academy — Data Extraction Rules (Android 12+) -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="dakkho_device_prefs.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+        <exclude domain="file" path="downloads/" />
+        <exclude domain="database" path="dakkho_downloads.db" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="dakkho_device_prefs.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+        <exclude domain="file" path="downloads/" />
+        <exclude domain="database" path="dakkho_downloads.db" />
+    </device-transfer>
+</data-extraction-rules>

@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "himadri.dakkho.pro.bd",
+    "sha256_cert_fingerprints": [
+      "B6:30:87:94:7F:C4:58:72:69:06:06:8B:38:48:05:7C:93:10:C0:B3:AD:9C:68:13:29:E0:DE:CB:54:13:66:30"
+    ]
+  }
+}]

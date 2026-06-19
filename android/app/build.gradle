@@ -1,0 +1,131 @@
+// ─────────────────────────────────────────────────────────────
+// DAKKHO Academy — Android Build Config
+// ─────────────────────────────────────────────────────────────
+// Flavors:
+//   dev     → himadri.dakkho.pro.bd.dev       (local dev, debug logging)
+//   staging → himadri.dakkho.pro.bd.staging   (pre-release testing)
+//   prod    → himadri.dakkho.pro.bd           (Play Store release)
+//
+// Build commands:
+//   flutter run --flavor dev      --dart-define-from-file=.env.dev
+//   flutter run --flavor staging  --dart-define-from-file=.env.staging
+//   flutter run --flavor prod     --dart-define-from-file=.env.prod
+//
+//   flutter build apk --flavor prod --release --dart-define-from-file=.env.prod
+//   flutter build appbundle --flavor prod --release --dart-define-from-file=.env.prod
+// ─────────────────────────────────────────────────────────────
+
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "himadri.dakkho.pro.bd"
+    compileSdk = 35  // Android 15 — required for Play Store from Aug 2025
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    // ─── Flavor Configuration ───
+    flavorDimensions = "default"
+
+    productFlavors {
+        dev {
+            dimension = "default"
+            applicationId = "himadri.dakkho.pro.bd.dev"
+            resValue "string", "app_name", "DAKKHO Dev"
+            resValue "string", "app_flavor", "dev"
+            // Dev: keep app label clear it's dev build
+        }
+        staging {
+            dimension = "default"
+            applicationId = "himadri.dakkho.pro.bd.staging"
+            resValue "string", "app_name", "DAKKHO Staging"
+            resValue "string", "app_flavor", "staging"
+        }
+        prod {
+            dimension = "default"
+            applicationId = "himadri.dakkho.pro.bd"
+            resValue "string", "app_name", "DAKKHO Academy"
+            resValue "string", "app_flavor", "prod"
+        }
+    }
+
+    defaultConfig {
+        applicationId = "himadri.dakkho.pro.bd"  // Overridden by flavors above
+        minSdk = 24  // Android 7.0 — covers 98% of BD students
+        targetSdk = 35
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+
+        // MultiDex for older devices (large method count from FCM + media_kit)
+        multiDexEnabled = true
+
+        // API URLs (per-flavor via resValue not possible for non-string arrays;
+        // we use BuildConfig fields instead)
+        buildConfigField "String", "API_BASE_URL", '"https://dakkho-admin-api.dakkho-admin.workers.dev"'
+        buildConfigField "String", "CDN_BASE_URL", '"https://dakkho-student.pages.dev"'
+        buildConfigField "String", "DEEP_LINK_SCHEME", '"dakkho"'
+        buildConfigField "String", "PIPRAPAY_BASE_URL", '"https://pay.dakkho.pro.bd"'
+    }
+
+    buildTypes {
+        release {
+            // ProGuard/R8 obfuscation
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+
+            // Resource shrinking keeps app icons but strips unused resources
+            signingConfig = signingConfigs.debug  // TODO: Replace with release keystore before Play Store submission
+        }
+        debug {
+            minifyEnabled = false
+            applicationIdSuffix = ".debug"  // Dev can install debug + release side-by-side
+            versionNameSuffix = "-debug"
+        }
+        profile {
+            minifyEnabled = false
+            applicationIdSuffix = ".profile"
+        }
+    }
+
+    // Prevent "duplicate classes" error from FCM + media_kit
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    // Required for go_router deep links
+    buildFeatures {
+        buildConfig = true
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Dependencies (Android-side)
+// ─────────────────────────────────────────────────────────────
+dependencies {
+    implementation "androidx.multidex:multidex:2.0.1"
+    implementation "androidx.window:window:1.3.0"
+    implementation "androidx.core:core-splashscreen:1.0.1"
+
+    // Firebase (for FCM push notifications)
+    implementation platform("com.google.firebase:firebase-bom:33.6.0")
+    implementation "com.google.firebase:firebase-messaging"
+
+    // ExoPlayer (used by media_kit for HLS playback)
+    implementation "androidx.media3:media3-exoplayer:1.4.1"
+    implementation "androidx.media3:media3-exoplayer-hls:1.4.1"
+    implementation "androidx.media3:media3-ui:1.4.1"
+}

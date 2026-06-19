@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DAKKHO Academy — Network Security Config -->
+<!-- Enforces HTTPS for all traffic + disables cleartext (Play Store requirement) -->
+<network-security-config>
+    <!-- Disallow cleartext HTTP for all domains -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Local dev exception: allow HTTP for localhost (10.0.2.2 is the Android emulator's host loopback) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">192.168.0.0/16</domain>
+    </domain-config>
+
+    <!-- TODO: Add certificate pinning for production API before Play Store release -->
+    <!-- <pin-set expiration="2026-12-31"> -->
+    <!--     <pin digest="SHA-256">YOUR_API_CERT_SHA256=</pin> -->
+    <!-- </pin-set> -->
+</network-security-config>

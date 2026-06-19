@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DAKKHO Academy — FileProvider Paths -->
+<!-- Used for sharing files (certificates, downloaded PDFs) via Intent -->
+<paths>
+    <files-path name="downloads" path="downloads/" />
+    <files-path name="cache" path="." />
+    <cache-path name="cache" path="." />
+    <external-files-path name="external_downloads" path="downloads/" />
+    <external-cache-path name="external_cache" path="." />
+</paths>

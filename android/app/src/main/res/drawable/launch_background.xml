@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DAKKHO Academy — Splash Screen Background -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Slate-900 background matches app dark mode -->
+    <item android:drawable="@color/dakkho_bg_dark" />
+
+    <!-- DAKKHO logo centered -->
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/ic_splash_logo" />
+    </item>
+</layer-list>
