@@ -72,6 +72,10 @@ class User {
     this.avatarUrl,
     this.packages = const [],
     this.themeMode = 'system',
+    this.phone,
+    this.bio,
+    this.semester,
+    this.role = 'student',
   });
 
   final String id;
@@ -85,6 +89,10 @@ class User {
   final String? avatarUrl;
   final List<UserPackage> packages;
   final String themeMode;
+  final String? phone;
+  final String? bio;
+  final int? semester;
+  final String role;
 
   factory User.fromJson(Map<String, dynamic> json) => User(
     id: json['id'] as String,
@@ -100,6 +108,10 @@ class User {
         ?.map((e) => UserPackage.fromJson(e as Map<String, dynamic>))
         .toList() ?? [],
     themeMode: json['themeMode'] as String? ?? 'system',
+    phone: json['phone'] as String?,
+    bio: json['bio'] as String?,
+    semester: json['semester'] as int?,
+    role: json['role'] as String? ?? 'student',
   );
 
   Map<String, dynamic> toJson() => {
@@ -114,7 +126,34 @@ class User {
     'avatarUrl': avatarUrl,
     'packages': packages.map((e) => e.toJson()).toList(),
     'themeMode': themeMode,
+    'phone': phone,
+    'bio': bio,
+    'semester': semester,
+    'role': role,
   };
+
+  User copyWith({
+    String? name, String? email, String? avatarUrl, String? phone,
+    String? bio, int? semester, String? technology, int? instituteId,
+    String? instituteName, String? technologyName, bool? emailVerified,
+    List<UserPackage>? packages, String? themeMode, String? role,
+  }) => User(
+    id: id,
+    name: name ?? this.name,
+    email: email ?? this.email,
+    avatarUrl: avatarUrl ?? this.avatarUrl,
+    phone: phone ?? this.phone,
+    bio: bio ?? this.bio,
+    semester: semester ?? this.semester,
+    technology: technology ?? this.technology,
+    instituteId: instituteId ?? this.instituteId,
+    instituteName: instituteName ?? this.instituteName,
+    technologyName: technologyName ?? this.technologyName,
+    emailVerified: emailVerified ?? this.emailVerified,
+    packages: packages ?? this.packages,
+    themeMode: themeMode ?? this.themeMode,
+    role: role ?? this.role,
+  );
 }
 
 class UserPackage {
