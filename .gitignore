@@ -62,9 +62,9 @@ GoogleService-Info.plist
 ios/Pods/
 android/.gradle/
 android/local.properties
-android/key.properties
-*.keystore
-*.jks
+# android/key.properties (committed for CI signing)
+# *.keystore (committed for CI signing)
+# *.jks (committed for CI signing)
 
 # OS
 .DS_Store

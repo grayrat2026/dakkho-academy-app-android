@@ -21,6 +21,13 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+// ─── Load signing config ───
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "himadri.dakkho.pro.bd"
     compileSdk = 36  // Required by media_kit + screen_brightness plugins
@@ -87,8 +94,12 @@ android {
             shrinkResources = true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
 
-            // Resource shrinking keeps app icons but strips unused resources
-            signingConfig = signingConfigs.debug  // TODO: Replace with release keystore before Play Store submission
+            // Sign with release key
+            signingConfig = signingConfigs.create("release")
+            signingConfig.keyAlias = keystoreProperties['keyAlias']
+            signingConfig.keyPassword = keystoreProperties['keyPassword']
+            signingConfig.storeFile = file(keystoreProperties['storeFile'])
+            signingConfig.storePassword = keystoreProperties['storePassword']
         }
         debug {
             minifyEnabled = false
