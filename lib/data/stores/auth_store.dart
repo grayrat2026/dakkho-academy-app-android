@@ -1,6 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/storage/secure_storage.dart';
 
+/// Safely parse a value that might be int, double, String, or null → int?
+/// D1/SQLite returns numbers as strings like "52.0" sometimes.
+int? _parseIntDynamic(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is double) return value.toInt();
+  if (value is String) {
+    return double.tryParse(value)?.toInt();
+  }
+  return null;
+}
+
 /// Auth Store — port of useAuthStore from web app.
 ///
 /// State:
@@ -95,10 +107,10 @@ class User {
   final String role;
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    email: json['email'] as String,
-    instituteId: json['instituteId'] as int?,
+    id: json['id']?.toString() ?? '',
+    name: json['name'] as String? ?? '',
+    email: json['email'] as String? ?? '',
+    instituteId: _parseIntDynamic(json['instituteId']),
     instituteName: json['instituteName'] as String?,
     technology: json['technology'] as String?,
     technologyName: json['technologyName'] as String?,
@@ -107,10 +119,10 @@ class User {
     packages: (json['packages'] as List<dynamic>?)
         ?.map((e) => UserPackage.fromJson(e as Map<String, dynamic>))
         .toList() ?? [],
-    themeMode: json['themeMode'] as String? ?? 'system',
+    themeMode: json['themeMode'] as String? ?? 'light',
     phone: json['phone'] as String?,
     bio: json['bio'] as String?,
-    semester: json['semester'] as int?,
+    semester: _parseIntDynamic(json['semester']),
     role: json['role'] as String? ?? 'student',
   );
 
@@ -178,13 +190,13 @@ class UserPackage {
   final String? expiresAt;
 
   factory UserPackage.fromJson(Map<String, dynamic> json) => UserPackage(
-    id: json['id'] as String,
-    packageId: json['package_id'] as String,
-    packageType: json['package_type'] as String,
-    price: json['price'] as num,
-    durationMonths: json['duration_months'] as int,
-    status: json['status'] as String,
-    activatedAt: json['activated_at'] as String,
+    id: json['id']?.toString() ?? '',
+    packageId: json['package_id']?.toString() ?? json['packageId']?.toString() ?? '',
+    packageType: json['package_type'] as String? ?? 'single',
+    price: (json['price'] as num?) ?? 0,
+    durationMonths: _parseIntDynamic(json['duration_months']) ?? 0,
+    status: json['status'] as String? ?? 'active',
+    activatedAt: json['activated_at'] as String? ?? '',
     expiresAt: json['expires_at'] as String?,
   );
 
