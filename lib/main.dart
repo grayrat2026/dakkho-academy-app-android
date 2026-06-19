@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'app.dart';
+import 'core/notifications/onesignal_service.dart';
 
 /// DAKKHO Academy — Flutter Android App
 ///
@@ -14,8 +15,13 @@ import 'app.dart';
 /// Build APK/AAB:
 ///   flutter build apk --flavor prod --release --dart-define-from-file=.env.prod
 ///   flutter build appbundle --flavor prod --release --dart-define-from-file=.env.prod
+///
+/// Stack: 100% Cloudflare + OneSignal. NO Firebase dependency.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ─── Initialize OneSignal (push notifications — no Firebase needed) ───
+  await OneSignalService.init();
 
   // Lock to portrait orientation (video player can request landscape when needed)
   await SystemChrome.setPreferredOrientations([

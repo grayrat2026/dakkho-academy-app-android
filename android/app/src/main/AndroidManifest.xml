@@ -95,18 +95,22 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- ─── Firebase Messaging default notification channel ─── -->
+        <!-- ─── OneSignal notification channel (default) ─── -->
         <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:name="com.onesignal.notification.default_channel_id"
             android:value="dakkho_notifications" />
 
         <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
+            android:name="com.onesignal.notification.default_color"
             android:resource="@color/dakkho_primary" />
 
         <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:name="com.onesignal.notification.default_icon"
             android:resource="@drawable/ic_notification" />
+
+        <!-- ─── OneSignal: min SDK filter (only Google Play Services devices get push) ─── -->
+        <!-- OneSignal handles its own FCM transport via shared Firebase project. -->
+        <!-- No google-services.json required. -->
 
         <!-- ─── FileProvider for sharing files (certificates, downloaded PDFs) ─── -->
         <provider
@@ -119,20 +123,8 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- ─── Disable Firebase Analytics by default (we'll enable later if needed) ─── -->
-        <meta-data
-            android:name="google_analytics_automatic_screen_reporting_enabled"
-            android:value="false" />
-
-        <!-- ─── Disable Firebase Analytics collection until user opts in ─── -->
-        <meta-data
-            android:name="firebase_analytics_collection_enabled"
-            android:value="false" />
-
-        <!-- ─── Disable Firebase Crashlytics (using Sentry instead) ─── -->
-        <meta-data
-            android:name="firebase_crashlytics_collection_enabled"
-            android:value="false" />
+        <!-- ─── NO Firebase Analytics (we use Cloudflare Workers analytics instead) ─── -->
+        <!-- ─── NO Firebase Crashlytics (we use Sentry for error tracking) ─── -->
     </application>
 
     <!-- ─── Required to query activities that can process text ─── -->
