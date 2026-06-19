@@ -13,6 +13,11 @@ doc/api/
 
 # dotenv environment variables file
 .env*
+# Allow our flavor env files (they contain no secrets — just URLs + config)
+!.env
+!.env.dev
+!.env.staging
+!.env.prod
 
 # Avoid committing generated Javascript files:
 *.dart.js
