@@ -94,12 +94,17 @@ android {
             shrinkResources = true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
 
-            // Sign with release key
-            signingConfig = signingConfigs.create("release")
-            signingConfig.keyAlias = keystoreProperties['keyAlias']
-            signingConfig.keyPassword = keystoreProperties['keyPassword']
-            signingConfig.storeFile = file(keystoreProperties['storeFile'])
-            signingConfig.storePassword = keystoreProperties['storePassword']
+            // Sign with release key if available, fall back to debug
+            if (keystoreProperties['storeFile'] != null) {
+                signingConfig = signingConfigs.create("release") {
+                    keyAlias = keystoreProperties['keyAlias']
+                    keyPassword = keystoreProperties['keyPassword']
+                    storeFile = file(keystoreProperties['storeFile'])
+                    storePassword = keystoreProperties['storePassword']
+                }
+            } else {
+                signingConfig = signingConfigs.debug
+            }
         }
         debug {
             minifyEnabled = false
