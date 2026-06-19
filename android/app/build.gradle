@@ -23,8 +23,8 @@ plugins {
 
 android {
     namespace = "himadri.dakkho.pro.bd"
-    compileSdk = 35  // Android 15 — required for Play Store from Aug 2025
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 36  // Required by media_kit + screen_brightness plugins
+    ndkVersion = "27.0.12077973"  // Required by most plugins
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -63,7 +63,7 @@ android {
     defaultConfig {
         applicationId = "himadri.dakkho.pro.bd"  // Overridden by flavors above
         minSdk = 24  // Android 7.0 — covers 98% of BD students
-        targetSdk = 35
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
