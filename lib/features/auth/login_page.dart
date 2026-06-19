@@ -73,7 +73,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         setState(() => _error = result.error ?? 'Invalid email or password');
       }
     } catch (e) {
-      setState(() => _error = 'Network error. Check your connection.');
+      setState(() => _error = 'Error: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

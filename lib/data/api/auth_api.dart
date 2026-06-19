@@ -14,24 +14,47 @@ class AuthApi {
     required String email,
     required String password,
   }) async {
-    final res = await _dio.post('/api/auth/login', data: {
-      'email': email,
-      'password': password,
-    });
-    final data = res.data as Map<String, dynamic>;
+    try {
+      final res = await _dio.post('/api/auth/login', data: {
+        'email': email,
+        'password': password,
+      });
+      final data = res.data as Map<String, dynamic>;
 
-    // Handle 2FA-required response
-    if (data['requires2FA'] == true) {
-      return LoginResult.requires2FA(
-        pendingToken: data['pendingToken'] as String,
-        email: data['email'] as String,
+      // Check for error response (status 401, 403, etc.)
+      if (res.statusCode != null && res.statusCode! >= 400) {
+        return LoginResult.failure(
+          data['error'] as String? ?? 'Invalid email or password',
+        );
+      }
+
+      // Handle 2FA-required response
+      if (data['requires2FA'] == true) {
+        return LoginResult.requires2FA(
+          pendingToken: data['pendingToken'] as String,
+          email: data['email'] as String,
+        );
+      }
+
+      // Check if token + user exist
+      if (data['token'] == null || data['user'] == null) {
+        return LoginResult.failure(
+          data['error'] as String? ?? 'Login failed. Please try again.',
+        );
+      }
+
+      return LoginResult.success(
+        token: data['token'] as String,
+        user: User.fromJson(data['user'] as Map<String, dynamic>),
       );
+    } on DioException catch (e) {
+      // Network error, timeout, etc.
+      return LoginResult.failure(
+        e.response?.data?['error'] as String? ?? 'Network error: ${e.message}',
+      );
+    } catch (e) {
+      return LoginResult.failure('Unexpected error: $e');
     }
-
-    return LoginResult.success(
-      token: data['token'] as String,
-      user: User.fromJson(data['user'] as Map<String, dynamic>),
-    );
   }
 
   /// Signup — step 1: create account, sends OTP to email
