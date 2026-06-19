@@ -74,8 +74,11 @@ class _DeleteAccountPageState extends ConsumerState<DeleteAccountPage> {
         onStepContinue: () {
           if (_step == 0) {
             setState(() => _step = 1);
-          } else if (_step == 1) setState(() => _step = 2);
-          else if (_step == 2) _deleteAccount();
+          } else if (_step == 1) {
+            setState(() => _step = 2);
+          } else if (_step == 2) {
+            _deleteAccount();
+          }
         },
         onStepCancel: () {
           if (_step > 0) {
