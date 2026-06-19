@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../shared/widgets/empty_state.dart';
 
-class DownloadsPage extends StatelessWidget {
-  const DownloadsPage({super.key});
+class EditProfilePage extends StatelessWidget {
+  const EditProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(title: const Text('Downloads')),
+      appBar: AppBar(title: const Text('Edit Profile')),
       body: const EmptyState(
-        icon: LucideIcons.download,
-        title: 'Downloads',
-        subtitle: 'Encrypted video downloads arrive in Phase 7.',
+        icon: LucideIcons.userCog,
+        title: 'Edit Profile',
+        subtitle: 'Form to edit name, phone, bio, avatar.',
       ),
     );
   }

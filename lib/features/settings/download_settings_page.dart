@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../shared/widgets/empty_state.dart';
 
-class DownloadsPage extends StatelessWidget {
-  const DownloadsPage({super.key});
+class DownloadSettingsPage extends StatelessWidget {
+  const DownloadSettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class DownloadsPage extends StatelessWidget {
       body: const EmptyState(
         icon: LucideIcons.download,
         title: 'Downloads',
-        subtitle: 'Encrypted video downloads arrive in Phase 7.',
+        subtitle: 'Storage limit + auto-delete + Wi-Fi only.',
       ),
     );
   }
