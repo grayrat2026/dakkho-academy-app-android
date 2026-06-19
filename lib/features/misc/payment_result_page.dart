@@ -7,6 +7,7 @@ import '../../core/theme/dakkho_theme.dart';
 import '../../data/api/apis.dart';
 import '../../data/stores/auth_store.dart';
 import '../../shared/animations/dakkho_animations.dart';
+import '../../data/api/auth_api.dart';
 import '../../shared/widgets/glass_card.dart';
 import '../../shared/widgets/gradient_button.dart';
 

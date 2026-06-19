@@ -157,7 +157,7 @@ class _ExamPrepPageState extends ConsumerState<ExamPrepPage> {
             crossAxisSpacing: 12,
             childAspectRatio: 2.2,
             children: [
-              _actionCard('Practice Quiz', LucideIcons.pencilLine, '/app/exam/practice', DakkhoColors.primary),
+              _actionCard('Practice Quiz', LucideIcons.pencil, '/app/exam/practice', DakkhoColors.primary),
               _actionCard('Exam Schedule', LucideIcons.calendarDays, '/app/exam/schedule', DakkhoColors.accent),
               _actionCard('My Results', LucideIcons.fileBarChart, '/app/exam/results', DakkhoColors.purple),
               _actionCard('Study Tips', LucideIcons.lightbulb, '/app/exam/tips', DakkhoColors.warning),

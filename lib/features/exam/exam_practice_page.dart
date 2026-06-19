@@ -48,7 +48,7 @@ class _ExamPracticePageState extends State<ExamPracticePage> {
               children: [
                 Row(
                   children: [
-                    Icon(LucideIcons.pencilLine, color: Colors.white, size: 24),
+                    Icon(LucideIcons.pencil, color: Colors.white, size: 24),
                     const SizedBox(width: 12),
                     const Text('Configure Your Quiz', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
                   ],
