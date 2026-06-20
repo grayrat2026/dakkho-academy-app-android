@@ -101,8 +101,8 @@ class _GradientButtonState extends State<GradientButton> {
                           Text(
                             widget.label,
                             style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontFamilyFallback: ['NotoSansBengali'],
+                              fontFamily: 'Nunito',
+                              fontFamilyFallback: ['NotoSansBengali', 'Roboto'],
                               color: Colors.white,
                               fontSize: 15,
                               fontWeight: FontWeight.w700,

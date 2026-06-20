@@ -126,6 +126,14 @@ flutter:
     - assets/icons/
     - assets/images/
     - assets/lottie/
+    - assets/fonts/
+
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+        - asset: assets/fonts/Nunito-Bold.ttf
+          weight: 700
 
 
 # ─────────────────────────────────────────────────────────────

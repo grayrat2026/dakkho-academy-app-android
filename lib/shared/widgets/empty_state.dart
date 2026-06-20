@@ -59,8 +59,8 @@ class EmptyState extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontFamily: 'Inter',
-                fontFamilyFallback: ['NotoSansBengali'],
+                fontFamily: 'Nunito',
+                fontFamilyFallback: ['NotoSansBengali', 'Roboto'],
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: DakkhoColors.textPrimary,
@@ -73,8 +73,8 @@ class EmptyState extends StatelessWidget {
               Text(
                 subtitle!,
                 style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontFamilyFallback: ['NotoSansBengali'],
+                  fontFamily: 'Nunito',
+                  fontFamilyFallback: ['NotoSansBengali', 'Roboto'],
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: DakkhoColors.textSecondary,

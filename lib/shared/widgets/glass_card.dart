@@ -97,12 +97,15 @@ class _GlassCardState extends State<GlassCard> {
                       ? Border.all(color: borderColor, width: 1)
                       : null,
                   boxShadow: [
-                    if (widget.elevation > 0 || _isHovered)
-                      BoxShadow(
-                        color: DakkhoColors.glassCardShadow,
-                        blurRadius: _isHovered ? 25 : 15,
-                        offset: const Offset(0, 10),
-                      ),
+                    // Always show shadow (matches web app's shadow-lg shadow-sky-500/10)
+                    BoxShadow(
+                      color: _isHovered
+                          ? const Color(0x3300EA5E9)  // sky-500/20 on hover
+                          : const Color(0x1A00EA5E9),  // sky-500/10 default
+                      blurRadius: _isHovered ? 25 : 15,
+                      offset: const Offset(0, 10),
+                      spreadRadius: 0,
+                    ),
                   ],
                 ),
                 padding: widget.padding,

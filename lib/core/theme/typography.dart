@@ -13,21 +13,21 @@ import 'colors.dart';
 class DakkhoTypography {
   DakkhoTypography._();
 
-  static const String primaryFont = 'Inter';        // For Latin text (modern, clean)
+  static const String primaryFont = 'Nunito';        // For Latin text (modern, clean)
   static const String bengaliFont = 'NotoSansBengali';  // For Bengali script
   static const String monoFont = 'RobotoMono';      // For code/IDs
 
   /// Font family list — Flutter picks the first one that has the glyph.
   /// Inter covers Latin, NotoSansBengali covers Bengali.
   static const List<String> defaultFontFamilyFallback = [
-    'Inter',
+    'Nunito',
     'NotoSansBengali',
     'Roboto',
   ];
 
   // ─── Display (large page titles) ───
   static const TextStyle displayLarge = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 32,
     fontWeight: FontWeight.w800,
@@ -37,7 +37,7 @@ class DakkhoTypography {
   );
 
   static const TextStyle displayMedium = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 28,
     fontWeight: FontWeight.w700,
@@ -47,7 +47,7 @@ class DakkhoTypography {
   );
 
   static const TextStyle displaySmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 24,
     fontWeight: FontWeight.w700,
@@ -57,7 +57,7 @@ class DakkhoTypography {
 
   // ─── Headlines (section titles) ───
   static const TextStyle headlineLarge = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 22,
     fontWeight: FontWeight.w700,
@@ -66,7 +66,7 @@ class DakkhoTypography {
   );
 
   static const TextStyle headlineMedium = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 20,
     fontWeight: FontWeight.w600,
@@ -75,7 +75,7 @@ class DakkhoTypography {
   );
 
   static const TextStyle headlineSmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 18,
     fontWeight: FontWeight.w600,
@@ -85,7 +85,7 @@ class DakkhoTypography {
 
   // ─── Body ───
   static const TextStyle bodyLarge = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 16,
     fontWeight: FontWeight.w400,
@@ -94,7 +94,7 @@ class DakkhoTypography {
   );
 
   static const TextStyle bodyMedium = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 14,
     fontWeight: FontWeight.w400,
@@ -103,7 +103,7 @@ class DakkhoTypography {
   );
 
   static const TextStyle bodySmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 12,
     fontWeight: FontWeight.w400,
@@ -113,7 +113,7 @@ class DakkhoTypography {
 
   // ─── Labels / Buttons ───
   static const TextStyle labelLarge = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 14,
     fontWeight: FontWeight.w600,
@@ -123,7 +123,7 @@ class DakkhoTypography {
   );
 
   static const TextStyle labelMedium = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 12,
     fontWeight: FontWeight.w600,
@@ -133,7 +133,7 @@ class DakkhoTypography {
   );
 
   static const TextStyle labelSmall = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 11,
     fontWeight: FontWeight.w500,
@@ -144,7 +144,7 @@ class DakkhoTypography {
 
   // ─── Caption / Overline ───
   static const TextStyle caption = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 11,
     fontWeight: FontWeight.w400,
@@ -153,7 +153,7 @@ class DakkhoTypography {
   );
 
   static const TextStyle overline = TextStyle(
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontFamilyFallback: defaultFontFamilyFallback,
     fontSize: 10,
     fontWeight: FontWeight.w700,

@@ -133,8 +133,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     'Welcome back',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontFamilyFallback: ['NotoSansBengali'],
+                      fontFamily: 'Nunito',
+                      fontFamilyFallback: ['NotoSansBengali', 'Roboto'],
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
                       color: DakkhoColors.textPrimary,
@@ -150,8 +150,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     'Sign in to continue learning',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontFamilyFallback: ['NotoSansBengali'],
+                      fontFamily: 'Nunito',
+                      fontFamilyFallback: ['NotoSansBengali', 'Roboto'],
                       fontSize: 14,
                       color: DakkhoColors.textSecondary,
                     ),

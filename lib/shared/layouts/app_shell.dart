@@ -1,24 +1,24 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/theme/dakkho_theme.dart';
+import '../../shared/animations/dakkho_animations.dart';
+import '../../shared/widgets/glass_card.dart';
 import '../../data/stores/auth_store.dart';
 import '../../data/stores/stores.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// AppShell — matches dakkho-student-app web AppShell.tsx exactly.
+/// AppShell — EXACT match to web AppShell.tsx + TopBar.tsx + Sidebar.tsx + BottomNav.tsx
 ///
-/// Layout:
-///   - TopBar: fixed top, h-16, glassmorphism, logo + center search + bell + avatar + hamburger
-///   - Sidebar: drawer with collapsible sections + user profile + logout
-///   - BottomNav: fixed bottom, h-16, glassmorphism, 5 tabs (Home, Explore, Courses, History, Profile)
-///   - Main content: pt-16 pb-20, max-w-1400 centered, p-4
-class AppShell extends ConsumerWidget {
+/// TopBar: Logo LEFT → Search CENTER → Bell + Avatar + Hamburger RIGHT
+/// Sidebar: Slides from RIGHT (endDrawer), collapsible sections
+/// BottomNav: 5 tabs with active indicator pill
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.child});
   final Widget child;
 
-  // BottomNav tabs — EXACT match to web app
   static const _destinations = [
     (icon: LucideIcons.home, label: 'Home', path: '/app/home'),
     (icon: LucideIcons.compass, label: 'Explore', path: '/app/explore'),
@@ -28,42 +28,198 @@ class AppShell extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
+  @override
+  Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    final currentIndex = _destinations.indexWhere((d) => location.startsWith(d.path));
+    final currentIndex = AppShell._destinations.indexWhere((d) => location.startsWith(d.path));
     final user = ref.watch(authProvider).user;
     final notifications = ref.watch(notificationProvider).notifications;
     final unreadCount = notifications.where((n) => !n.read).length;
+    final searchQuery = ref.watch(searchProvider).query;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? DakkhoColors.glassSidebar : DakkhoColors.glassSidebarLight;
-    final borderColor = isDark ? DakkhoColors.glassCardBorder : DakkhoColors.glassCardBorderLight;
+    final bgColor = isDark ? const Color(0xD90F172A) : const Color(0xD9FFFFFF);
+    final borderColor = isDark ? const Color(0x0DFFFFFF) : const Color(0x4DFFFFFF);
+    final mutedBg = isDark ? const Color(0x4D1E293B) : const Color(0x80F1F5F9);
+    final mutedText = isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight;
+    final primaryText = isDark ? DakkhoColors.textPrimary : DakkhoColors.textPrimaryLight;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      endDrawer: _AppDrawer(),  // endDrawer = slides from RIGHT (matches web app)
       body: Stack(
         children: [
-          // Main content area
+          // Main content
           SafeArea(
             child: Column(
               children: [
-                // TopBar
-                _TopBar(user: user, unreadCount: unreadCount),
-                // Content
-                Expanded(
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 1400),
-                    child: child,
+                // ─── TopBar (matches web TopBar.tsx) ───
+                Container(
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    border: Border(bottom: BorderSide(color: borderColor, width: 1)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        // LEFT: Logo (click → home)
+                        GestureDetector(
+                          onTap: () => context.go('/app/home'),
+                          child: Container(
+                            width: 32, height: 32,
+                            decoration: BoxDecoration(
+                              gradient: DakkhoColors.primaryGradient,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(LucideIcons.graduationCap, color: Colors.white, size: 18),
+                          ),
+                        ).animate().fadeIn(),
+                        const SizedBox(width: 12),
+
+                        // CENTER: Search bar
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => context.go('/app/search'),
+                            child: Container(
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: mutedBg,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const SizedBox(width: 12),
+                                  Icon(LucideIcons.search, size: 16, color: mutedText),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      searchQuery.isNotEmpty ? searchQuery : 'Search courses, instructors...',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: searchQuery.isNotEmpty ? primaryText : mutedText,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (searchQuery.isNotEmpty)
+                                    GestureDetector(
+                                      onTap: () => ref.read(searchProvider.notifier).setQuery(''),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: Container(
+                                          width: 24, height: 24,
+                                          decoration: BoxDecoration(
+                                            color: mutedBg,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(LucideIcons.x, size: 12, color: mutedText),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // RIGHT: Notification bell with badge
+                        GestureDetector(
+                          onTap: () => context.go('/app/notifications'),
+                          child: Container(
+                            width: 40, height: 40,
+                            decoration: BoxDecoration(
+                              color: mutedBg,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Stack(
+                              children: [
+                                Center(child: Icon(LucideIcons.bell, size: 20, color: mutedText)),
+                                if (unreadCount > 0)
+                                  Positioned(
+                                    top: 8, right: 8,
+                                    child: Container(
+                                      width: 8, height: 8,
+                                      decoration: BoxDecoration(
+                                        color: DakkhoColors.danger,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: bgColor, width: 2),
+                                      ),
+                                    ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
+                                      begin: const Offset(1, 1),
+                                      end: const Offset(1.8, 1.8),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // RIGHT: User avatar
+                        GestureDetector(
+                          onTap: () => context.go('/app/profile'),
+                          child: Container(
+                            width: 40, height: 40,
+                            decoration: BoxDecoration(
+                              gradient: DakkhoColors.primaryGradient,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: DakkhoColors.primary.withValues(alpha: 0.2),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: user?.avatarUrl?.isNotEmpty == true
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(user!.avatarUrl!, fit: BoxFit.cover),
+                                  )
+                                : Center(
+                                    child: Text(
+                                      (user?.name ?? 'U')[0].toUpperCase(),
+                                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // RIGHT: Hamburger (mobile only — opens endDrawer from RIGHT)
+                        GestureDetector(
+                          onTap: () => Scaffold.of(context).openEndDrawer(),
+                          child: Container(
+                            width: 40, height: 40,
+                            decoration: BoxDecoration(
+                              color: mutedBg,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(LucideIcons.menu, size: 20, color: mutedText),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+
+                // Content
+                Expanded(child: widget.child),
               ],
             ),
           ),
-          // BottomNav
+
+          // ─── BottomNav (matches web BottomNav.tsx) ───
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
+            bottom: 0, left: 0, right: 0,
             child: Container(
               decoration: BoxDecoration(
                 color: bgColor,
@@ -75,48 +231,40 @@ class AppShell extends ConsumerWidget {
                   height: 64,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: List.generate(_destinations.length, (i) {
-                      final d = _destinations[i];
-                      final isActive = i == currentIndex.clamp(0, _destinations.length - 1);
+                    children: List.generate(AppShell._destinations.length, (i) {
+                      final d = AppShell._destinations[i];
+                      final isActive = i == currentIndex.clamp(0, AppShell._destinations.length - 1);
                       return GestureDetector(
                         onTap: () => context.go(d.path),
+                        behavior: HitTestBehavior.opaque,
                         child: SizedBox(
-                          width: 64,
-                          height: 64,
+                          width: 64, height: 64,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
                                 d.icon,
                                 size: 20,
-                                color: isActive ? DakkhoColors.primary : (isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight),
+                                color: isActive ? DakkhoColors.primary : mutedText,
                                 fill: isActive ? 1.0 : 0.0,
+                              ).animate(target: isActive ? 1 : 0).slideY(
+                                begin: 0, end: isActive ? -0.1 : 0,
+                                duration: const Duration(milliseconds: 200),
                               ),
-                              const SizedBox(height: 2),
-                              if (isActive)
-                                Text(
-                                  d.label,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: DakkhoColors.primary,
-                                  ),
-                                ),
-                              if (isActive)
+                              if (isActive) ...[
+                                const SizedBox(height: 2),
+                                Text(d.label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: DakkhoColors.primary)),
+                                const SizedBox(height: 2),
                                 Container(
-                                  margin: const EdgeInsets.only(top: 2),
-                                  width: 24,
-                                  height: 3,
+                                  width: 24, height: 3,
                                   decoration: BoxDecoration(
                                     gradient: DakkhoColors.primaryGradient,
                                     borderRadius: BorderRadius.circular(100),
                                   ),
                                 ),
+                              ],
                             ],
                           ),
-                        ).animate(target: isActive ? 1 : 0).slideY(
-                          begin: 0, end: isActive ? -0.1 : 0,
-                          duration: const Duration(milliseconds: 200),
                         ),
                       );
                     }),
@@ -127,179 +275,27 @@ class AppShell extends ConsumerWidget {
           ),
         ],
       ),
-      drawer: const _AppDrawer(),
     );
   }
 }
 
-/// TopBar — matches web TopBar.tsx exactly.
-/// Fixed top, h-16, glassmorphism, logo + center search + bell + avatar + hamburger
-class _TopBar extends ConsumerWidget {
-  const _TopBar({required this.user, required this.unreadCount});
-  final User? user;
-  final int unreadCount;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xCC0F172A) : const Color(0xCCFFFFFF);
-    final borderColor = isDark ? const Color(0x0DFFFFFF) : const Color(0x80FFFFFF);
-    final searchQuery = ref.watch(searchProvider).query;
-
-    return Container(
-      height: 64,
-      decoration: BoxDecoration(
-        color: bgColor,
-        border: Border(bottom: BorderSide(color: borderColor, width: 1)),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              // LEFT: Hamburger (mobile)
-              GestureDetector(
-                onTap: () => Scaffold.of(context).openDrawer(),
-                child: Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(
-                    color: isDark ? DakkhoColors.surfaceLight.withValues(alpha: 0.3) : DakkhoColors.surfaceLightMode.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(LucideIcons.menu, size: 20, color: isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Logo image (clickable → home)
-              GestureDetector(
-                onTap: () => context.go('/app/home'),
-                child: Container(
-                  width: 32, height: 32,
-                  decoration: BoxDecoration(
-                    gradient: DakkhoColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(LucideIcons.graduationCap, color: Colors.white, size: 18),
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              // CENTER: Search bar
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => context.go('/app/search'),
-                  child: Container(
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: isDark ? DakkhoColors.surfaceLight.withValues(alpha: 0.3) : DakkhoColors.surfaceLightMode.withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.transparent, width: 1),
-                    ),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 12),
-                        Icon(LucideIcons.search, size: 16, color: isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            searchQuery.isNotEmpty ? searchQuery : 'Search courses, instructors...',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: searchQuery.isNotEmpty
-                                  ? (isDark ? DakkhoColors.textPrimary : DakkhoColors.textPrimaryLight)
-                                  : (isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (searchQuery.isNotEmpty)
-                          GestureDetector(
-                            onTap: () => ref.read(searchProvider.notifier).setQuery(''),
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: Icon(LucideIcons.x, size: 14, color: isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // RIGHT: Notification bell with badge
-              GestureDetector(
-                onTap: () => context.go('/app/notifications'),
-                child: Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(
-                    color: isDark ? DakkhoColors.surfaceLight.withValues(alpha: 0.3) : DakkhoColors.surfaceLightMode.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Stack(
-                    children: [
-                      Center(child: Icon(LucideIcons.bell, size: 20, color: isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight)),
-                      if (unreadCount > 0)
-                        Positioned(
-                          top: 8, right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(color: DakkhoColors.danger, shape: BoxShape.circle),
-                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                            child: Text(
-                              unreadCount > 9 ? '9+' : '$unreadCount',
-                              style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // User avatar
-              GestureDetector(
-                onTap: () => context.go('/app/profile'),
-                child: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: DakkhoColors.primary,
-                  backgroundImage: user?.avatarUrl?.isNotEmpty == true ? NetworkImage(user!.avatarUrl!) : null,
-                  child: user?.avatarUrl?.isEmpty != false
-                      ? Text(
-                          (user?.name ?? '?')[0].toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
-                        )
-                      : null,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Sidebar/Drawer — matches web Sidebar.tsx exactly.
-/// Collapsible sections: Main, Departments, Semesters, Exam, Social, Account
+// ─── Sidebar/Drawer (slides from RIGHT — matches web Sidebar.tsx) ───
 class _AppDrawer extends ConsumerWidget {
-  const _AppDrawer();
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? DakkhoColors.glassSidebar : DakkhoColors.glassSidebarLight;
+    final bgColor = isDark ? const Color(0xF20F172A) : const Color(0xF2FFFFFF);
+    final primaryText = isDark ? DakkhoColors.textPrimary : DakkhoColors.textPrimaryLight;
+    final mutedText = isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight;
     final user = ref.watch(authProvider).user;
+    final expanded = <String>{'dept', 'semester', 'exam', 'social'};
 
     final mainItems = [
       (LucideIcons.home, 'Home', '/app/home'),
       (LucideIcons.compass, 'Explore', '/app/explore'),
       (LucideIcons.bookOpen, 'My Courses', '/app/my-courses'),
       (LucideIcons.bookmark, 'Bookmarks', '/app/bookmarks'),
+      (LucideIcons.grid3x3, 'Categories', '/app/category/cse'),
       (LucideIcons.graduationCap, 'Instructors', '/app/instructors'),
       (LucideIcons.clock, 'Watch History', '/app/history'),
       (LucideIcons.download, 'Downloads', '/app/downloads'),
@@ -339,111 +335,144 @@ class _AppDrawer extends ConsumerWidget {
       (LucideIcons.heart, 'Peers', '/app/community/peer-connections'),
       (LucideIcons.messageCircle, 'Community', '/app/community'),
       (LucideIcons.flag, 'Feedback', '/app/community/feedback'),
-      (LucideIcons.tag, 'Pricing', '/app/pricing'),
+      (LucideIcons.dollarSign, 'Pricing', '/app/pricing'),
     ];
 
-    final accountItems = [
+    final generalItems = [
       (LucideIcons.settings, 'Settings', '/app/settings'),
       (LucideIcons.helpCircle, 'Help', '/app/help'),
+      (LucideIcons.messageCircle, 'Discussion', '/app/discussion'),
       (LucideIcons.info, 'About', '/app/about'),
     ];
 
     return Drawer(
       backgroundColor: bgColor,
-      width: MediaQuery.of(context).size.width * 0.85,
+      width: 280,
       child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
           children: [
-            // User profile section at top
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () { context.go('/app/home'); Navigator.pop(context); },
+                    child: Container(
+                      width: 32, height: 32,
+                      decoration: BoxDecoration(
+                        gradient: DakkhoColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(LucideIcons.graduationCap, color: Colors.white, size: 18),
+                    ),
+                  ),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 32, height: 32,
+                      decoration: BoxDecoration(color: isDark ? DakkhoColors.surfaceLight : DakkhoColors.surfaceLightMode, borderRadius: BorderRadius.circular(8)),
+                      child: Icon(LucideIcons.x, size: 16, color: mutedText),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // User info
             if (user != null) ...[
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: Row(
                   children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: DakkhoColors.primary,
-                      backgroundImage: user.avatarUrl?.isNotEmpty == true ? NetworkImage(user.avatarUrl!) : null,
-                      child: user.avatarUrl?.isEmpty != false
-                          ? Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))
-                          : null,
+                    Container(
+                      width: 48, height: 48,
+                      decoration: BoxDecoration(
+                        gradient: DakkhoColors.primaryGradient,
+                        shape: BoxShape.circle,
+                        boxShadow: [BoxShadow(color: DakkhoColors.primary.withValues(alpha: 0.3), blurRadius: 10)],
+                      ),
+                      child: user.avatarUrl?.isNotEmpty == true
+                          ? ClipOval(child: Image.network(user.avatarUrl!, fit: BoxFit.cover))
+                          : Center(child: Text(user.name.isNotEmpty ? user.name[0].toUpperCase() : '?', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700))),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(user.name,
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700,
-                                  color: isDark ? DakkhoColors.textPrimary : DakkhoColors.textPrimaryLight)),
-                          Text(user.email,
-                              style: TextStyle(fontSize: 11, color: isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight),
-                              overflow: TextOverflow.ellipsis),
+                          Text(user.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: primaryText), overflow: TextOverflow.ellipsis),
+                          Text(user.technologyName ?? user.technology ?? 'No technology set', style: TextStyle(fontSize: 11, color: mutedText), overflow: TextOverflow.ellipsis),
+                          Text(user.instituteName ?? 'No institute set', style: const TextStyle(fontSize: 11, color: DakkhoColors.primary), overflow: TextOverflow.ellipsis),
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-              const Divider(),
             ],
+            const Divider(),
 
-            // Main items
-            ...mainItems.map((item) => _DrawerItem(icon: item.$1, label: item.$2, path: item.$3, isDark: isDark)),
+            // Scrollable nav
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                children: [
+                  _sectionLabel('Menu', isDark),
+                  ...mainItems.map((item) => _navItem(item.$1, item.$2, item.$3, isDark, primaryText, mutedText, context)),
 
-            // Departments (collapsible)
-            _SectionHeader(title: 'Departments', isDark: isDark),
-            ...deptItems.map((item) => _DrawerItem(icon: item.$1, label: item.$2, path: item.$3, isDark: isDark, indent: true)),
+                  _sectionLabel('Departments', isDark),
+                  ...deptItems.map((item) => _navItem(item.$1, item.$2, item.$3, isDark, primaryText, mutedText, context, indent: true)),
 
-            // Semesters
-            _SectionHeader(title: 'Semesters', isDark: isDark),
-            ...semesterItems.map((item) => _DrawerItem(icon: item.$1, label: item.$2, path: item.$3, isDark: isDark, indent: true)),
+                  _sectionLabel('Semesters', isDark),
+                  ...semesterItems.map((item) => _navItem(item.$1, item.$2, item.$3, isDark, primaryText, mutedText, context, indent: true)),
 
-            // Exam
-            _SectionHeader(title: 'Exam', isDark: isDark),
-            ...examItems.map((item) => _DrawerItem(icon: item.$1, label: item.$2, path: item.$3, isDark: isDark, indent: true)),
+                  _sectionLabel('Exams', isDark),
+                  ...examItems.map((item) => _navItem(item.$1, item.$2, item.$3, isDark, primaryText, mutedText, context, indent: true)),
 
-            // Social
-            _SectionHeader(title: 'Community', isDark: isDark),
-            ...socialItems.map((item) => _DrawerItem(icon: item.$1, label: item.$2, path: item.$3, isDark: isDark, indent: true)),
+                  _sectionLabel('Community', isDark),
+                  ...socialItems.map((item) => _navItem(item.$1, item.$2, item.$3, isDark, primaryText, mutedText, context, indent: true)),
 
-            // Account
-            _SectionHeader(title: 'Account', isDark: isDark),
-            ...accountItems.map((item) => _DrawerItem(icon: item.$1, label: item.$2, path: item.$3, isDark: isDark)),
+                  _sectionLabel('General', isDark),
+                  ...generalItems.map((item) => _navItem(item.$1, item.$2, item.$3, isDark, primaryText, mutedText, context)),
+                ],
+              ),
+            ),
 
             // Logout
             const Divider(),
-            _DrawerItem(
-              icon: LucideIcons.logOut,
-              label: 'Logout',
-              path: '/logout',
-              isDark: isDark,
-              iconColor: DakkhoColors.danger,
-              onTap: () async {
-                await ref.read(authProvider.notifier).logout();
-                if (context.mounted) context.go('/login');
-              },
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: GestureDetector(
+                onTap: () async {
+                  await ref.read(authProvider.notifier).logout();
+                  if (context.mounted) context.go('/login');
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+                  child: Row(
+                    children: [
+                      Icon(LucideIcons.logOut, size: 20, color: DakkhoColors.danger),
+                      const SizedBox(width: 12),
+                      Text('Logout', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: DakkhoColors.danger)),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.isDark});
-  final String title;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _sectionLabel(String text, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 4),
       child: Text(
-        title.toUpperCase(),
+        text.toUpperCase(),
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w800,
@@ -453,45 +482,42 @@ class _SectionHeader extends StatelessWidget {
       ),
     );
   }
-}
 
-class _DrawerItem extends StatelessWidget {
-  const _DrawerItem({
-    required this.icon, required this.label, required this.path, required this.isDark,
-    this.indent = false, this.iconColor, this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final String path;
-  final bool isDark;
-  final bool indent;
-  final Color? iconColor;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _navItem(IconData icon, String label, String path, bool isDark, Color primaryText, Color mutedText, BuildContext context, {bool indent = false}) {
     final location = GoRouterState.of(context).matchedLocation;
     final isActive = location == path || location.startsWith('$path/');
 
-    return ListTile(
-      leading: Icon(icon, size: 18,
-          color: iconColor ?? (isActive ? DakkhoColors.primary : (isDark ? DakkhoColors.textSecondary : DakkhoColors.textSecondaryLight))),
-      title: Padding(
-        padding: EdgeInsets.only(left: indent ? 8 : 0),
-        child: Text(label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              color: isActive ? DakkhoColors.primary : (isDark ? DakkhoColors.textPrimary : DakkhoColors.textPrimaryLight),
-            )),
-      ),
-      contentPadding: EdgeInsets.only(left: indent ? 36 : 20, right: 16),
-      dense: true,
-      onTap: onTap ?? () {
-        if (path == '/logout') return;
+    return GestureDetector(
+      onTap: () {
         context.go(path);
-        Navigator.of(context).pop();
+        Navigator.pop(context);
       },
-    );
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        margin: EdgeInsets.only(left: indent ? 16 : 0, bottom: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? DakkhoColors.primary.withValues(alpha: 0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: isActive ? DakkhoColors.primary : mutedText),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                  color: isActive ? DakkhoColors.primary : primaryText,
+                ),
+              ),
+            ),
+            if (isActive) Icon(LucideIcons.chevronRight, size: 14, color: DakkhoColors.primary),
+          ],
+        ),
+      ),
+    ).animate().fadeIn(delay: 30.ms).slideX(begin: -0.05, end: 0);
   }
 }
