@@ -295,7 +295,7 @@ class _AppDrawer extends ConsumerWidget {
       (LucideIcons.compass, 'Explore', '/app/explore'),
       (LucideIcons.bookOpen, 'My Courses', '/app/my-courses'),
       (LucideIcons.bookmark, 'Bookmarks', '/app/bookmarks'),
-      (LucideIcons.grid3x3, 'Categories', '/app/category/cse'),
+      (LucideIcons.layoutGrid, 'Categories', '/app/category/cse'),
       (LucideIcons.graduationCap, 'Instructors', '/app/instructors'),
       (LucideIcons.clock, 'Watch History', '/app/history'),
       (LucideIcons.download, 'Downloads', '/app/downloads'),
